@@ -14,13 +14,13 @@ def __run(server: __server.Server, port, config, debug):
         # display = Display()
         # display.start()
     
-    options = uc.ChromeOptions()
-    options.add_argument("--mute-audio")
-    options.add_argument("--disable-dev-shm-usage")
-
     server.start()
 
     def run_time():
+        options = uc.ChromeOptions()
+        options.add_argument("--mute-audio")
+        options.add_argument("--disable-dev-shm-usage")
+
         driver = uc.Chrome(
             options=options,
             no_sandbox=(False if debug else True),
