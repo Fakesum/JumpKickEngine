@@ -1,2 +1,4 @@
-video_ids = ['onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4', 'onbOB-70jI4']
+type = 1
 dnum = 1
+vid_ids = []
+num_vid_insts = 10

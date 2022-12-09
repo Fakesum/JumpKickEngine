@@ -3,6 +3,9 @@ def __no_import():
     raise Exception("Not Allowed to import, "+ __name__)
 sys.modules[__name__] = (lambda: __no_import)
 
+from loguru import logger
+logger.warning("THIS CODE HAS NOT BEEN TESTED, please check for errors before using")
+
 def main(__type=1, num_threads=1, vids=[], vid_inst=10):
     import threading, typing
     from utils import wrap_poll, exec_cmd, wrap_filter, find_free_port
@@ -69,8 +72,6 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
                 self.__play_vids(self.__get_vids())
     
     class __YoutubeViewBot_Local(YoutubeBot):
-        VIDS_INST: int = 10
-
         def __init__(self, vids: typing.List[str]) -> None:
             super().__init__()
             self.VIDS = vids
@@ -78,8 +79,7 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
         def run(self):
             from server import Server
             port = find_free_port()
-            server = Server(self.VIDS, port)
-            server.VIDS_INST = self.VIDS_INST
+            server = Server(self.VIDS, port, vid_inst)
             server.start()
             
             self.__create_driver()
@@ -96,6 +96,14 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
         case 1:
             [__YoutubeViewBot_Local(vids).start() for _ in range(num_threads)]
     
+    logger.warning("Stoping")
     import time
     while True:
         time.sleep(1)
+
+if __name__ == "__main__":
+    import toml
+
+    config = toml.load("config.toml")
+
+    main(config["type"], config["dnum"], config["vid_ids"], config["num_vid_insts"])

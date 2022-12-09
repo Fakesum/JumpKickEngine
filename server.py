@@ -21,10 +21,12 @@ class RoundTable(list):
             return self[self.prev:num+self.prev]
 
 class Server(threading.Thread):
-    VIDS_INST = 10
-    def __init__(self, vid_ids: list, port) -> None:
+    def __init__(self, vid_ids: list, port, vids_insts) -> None:
         self.vids = RoundTable(vid_ids)
         self.nthcall = 0
+
+        self.VIDS_INST = vids_insts
+
         self.port = port
 
         super().__init__()
