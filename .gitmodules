@@ -1,4 +1,4 @@
-[submodule "engine/utils"]
-	path = engine/utils
+[submodule "utils"]
+	path = utils
 	url = git@github.com:Fakesum/utils.git
 	branch = main
