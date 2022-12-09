@@ -4,7 +4,7 @@ def __no_import():
 sys.modules[__name__] = (lambda: __no_import)
 
 from loguru import logger
-logger.warning("THIS CODE HAS NOT BEEN TESTED, please check for errors before using")
+logger.warning("THIS CODE HAS NOT BEEN TESTED")
 
 def main(__type=1, num_threads=1, vids=[], vid_inst=10):
     import threading, typing
