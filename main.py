@@ -93,7 +93,6 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
         case 1:
             [__YoutubeViewBot_Local(vids).start() for _ in range(num_threads)]
     
-    logger.warning("Stoping")
     import time
     while True:
         time.sleep(1)
