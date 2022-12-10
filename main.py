@@ -3,9 +3,6 @@ def __no_import():
     raise Exception("Not Allowed to import, "+ __name__)
 sys.modules[__name__] = (lambda: __no_import)
 
-from loguru import logger
-logger.warning("THIS CODE HAS NOT BEEN TESTED")
-
 def main(__type=1, num_threads=1, vids=[], vid_inst=10):
     import threading, typing
     from utils import wrap_poll, exec_cmd, wrap_filter, find_free_port
@@ -103,7 +100,5 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
 
 if __name__ == "__main__":
     import toml
-
     config = toml.load("config.toml")
-
     main(config["type"], config["dnum"], config["vid_ids"], config["num_vid_insts"])
