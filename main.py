@@ -21,7 +21,7 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
             super().__init__()
             self.daemon = True
 
-        def __create_driver(self) -> None:
+        def create_driver(self) -> None:
             options = uc.ChromeOptions()
             
             if self.__os.name == 'posix':
@@ -44,25 +44,30 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
             super().__init__()
             self.valid_subreddits = ["JumpKickEngine", "JumpKickEngine1"]
 
-        @wrap_poll(None, return_val=True)
+        @wrap_poll(None, validity_determiner=(lambda a: a != []))
         def __get_vids(self):
-            res = self.driver.find_elements(By.CSS_SELECTOR, "iframe.media-element")
-            assert res != []
-            return res
+            return self.driver.find_elements(By.CSS_SELECTOR, "iframe.media-element")
         
         def __default_content(self):
             self.driver.switch_to.default_content()
-
-        @wrap_poll(None, expected_outcome=None, generator=True)
-        @wrap_filter
-        def __play_vids(self, frame): # TODO: This needs to countinue where it left off incase of error not just try to play all the bottons again.
+        
+        @wrap_poll(None, expected_outcome=None, on_failer=__default_content)
+        def __switch_video_frame(self, frame):
             self.driver.switch_to.frame(frame)
             self.driver.switch_to.frame(self.driver.find_element(By.CSS_SELECTOR, "iframe"))
+        
+        @wrap_poll(None, expected_outcome=None)
+        def __press_play_vids(self):
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
+
+        @wrap_filter
+        def __play_vids(self, frame):
+            self.__switch_video_frame(frame)
+            self.__press_play_vids()
             self.__default_content()
         
         def run(self):
-            self.__create_driver()
+            self.create_driver()
 
             for subreddit in self.valid_subreddits:
                 self.driver.get(f"https://reddit.com/r/{subreddit}")
@@ -73,19 +78,38 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
             super().__init__()
             self.VIDS = vids
         
+        @wrap_poll(None, validity_determiner=(lambda a: (a.__len__() == vid_inst)))
+        def __get_vids(self):
+            return self.driver.find_elements(By.CSS_SELECTOR, "iframe")
+        
+        @wrap_poll(None, expected_outcome=None)
+        def __switch_to_frame(self, frame):
+            self.driver.switch_to.frame(frame)
+        
+        @wrap_poll(None, expected_outcome=None)
+        def __play_vid(self):
+            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
+        
+        @wrap_filter
+        def __play_vids(self, frame):
+            self.__switch_to_frame(frame)
+            self.__play_vid()
+        
         def run(self):
             from server import Server
+            import time
+
             port = find_free_port()
             server = Server(self.VIDS, port, vid_inst)
             server.start()
             
-            self.__create_driver()
+            self.create_driver()
 
             self.driver.get(f"http://localhost:{port}/")
 
-            for frame in self.driver.find_elements(By.CSS_SELECTOR, "iframe"):
-                self.driver.switch_to.frame(frame)
-                self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
+            while True:
+                self.__play_vids(self.__get_vids())
+                time.sleep(40)
     
     match __type:
         case 0:
