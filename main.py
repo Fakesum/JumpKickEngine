@@ -1,3 +1,4 @@
+status
 import sys
 def __no_import():
     raise Exception("Not Allowed to import, "+ __name__)
@@ -26,8 +27,8 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
             
             if self.__os.name == 'posix':
                 from pyvirtualdisplay.display import Display
-                self.__display = Display()
-                self.__display.start()
+                # self.__display = Display()
+                # self.__display.start()
             
             options.add_argument("--mute-audio")
             options.add_argument("--disable-dev-shm-usage")
@@ -60,20 +61,34 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
         def __press_play_vids(self):
             self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
 
-        @wrap_filter
-        def __play_vids(self, frame):
-            self.__switch_video_frame(frame)
-            self.__press_play_vids()
-            self.__default_content()
         
         def run(self):
             self.create_driver()
 
+            @wrap_filter
+            def play_vids(frame):
+                self.__switch_video_frame(frame)
+                self.__press_play_vids()
+                self.__default_content()
+
             for subreddit in self.valid_subreddits:
                 self.driver.get(f"https://reddit.com/r/{subreddit}")
-                self.__play_vids(self.__get_vids())
+                play_vids(self.__get_vids())
+
+                if subreddit != self.valid_subreddits[-1]:
+                    self.driver.switch_to.new_window()
+            
+            while True:
+                time.sleep(40)
+                for window in self.driver.window_handles:
+                    self.driver.switch_to.window(window)
+                    self.driver.get(self.driver.current_url)
+
+                    play_vids(self.__get_vids())
     
     class __YoutubeViewBot_Local(YoutubeBot):
+        from selenium.webdriver.common.action_chains import ActionChains
+
         def __init__(self, vids: typing.List[str]) -> None:
             super().__init__()
             self.VIDS = vids
@@ -86,14 +101,8 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
         def __switch_to_frame(self, frame):
             self.driver.switch_to.frame(frame)
         
-        @wrap_poll(None, expected_outcome=None)
         def __play_vid(self):
-            self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
-        
-        @wrap_filter
-        def __play_vids(self, frame):
-            self.__switch_to_frame(frame)
-            self.__play_vid()
+            self.ActionChains(self.driver).click(self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]')).perform()
         
         def run(self):
             from server import Server
@@ -107,9 +116,16 @@ def main(__type=1, num_threads=1, vids=[], vid_inst=10):
 
             self.driver.get(f"http://localhost:{port}/")
 
+            @wrap_filter
+            def play_vids(frame):
+                self.__switch_to_frame(frame)
+                self.__play_vid()
+                self.driver.switch_to.default_content()
+            
             while True:
-                self.__play_vids(self.__get_vids())
+                play_vids(self.__get_vids())
                 time.sleep(40)
+                self.driver.get(f"http://localhost:{port}/")
     
     match __type:
         case 0:
