@@ -42,7 +42,7 @@ class Server(threading.Thread):
             TO_RENDER = """
             <html>
             <body>
-            """ + (" ".join([f"""<iframe width="90" height="160" src="https://www.youtube.com/embed/{vid}"></iframe>""" for vid in self.vids.get(self.VIDS_INST, self.nthcall)])) +"""
+            """ + (" ".join([f"""<iframe width="90" height="160" src="https://www.youtube.com/embed/{vid}"></iframe>""" for vid in self.vids.get(self.VIDS_INST+1, self.nthcall)])) +"""
             </body>
             </html>
             """
