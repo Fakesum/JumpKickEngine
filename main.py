@@ -1,4 +1,3 @@
-status
 import sys
 def __no_import():
     raise Exception("Not Allowed to import, "+ __name__)
