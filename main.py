@@ -84,9 +84,10 @@ class YoutubeViewBot_Reddit(YoutubeBot):
 class YoutubeViewBot_Local(YoutubeBot):
     from selenium.webdriver.common.action_chains import ActionChains
 
-    def __init__(self, vids: typing.List[str]) -> None:
+    def __init__(self, vids: typing.List[str], port) -> None:
         super().__init__()
         self.VIDS = vids
+        self.port = port
     
     @wrap_poll(None, validity_determiner=(lambda a: (a.__len__() == settings["local"]["num_vid_insts"])))
     def __get_vids(self):
@@ -100,16 +101,11 @@ class YoutubeViewBot_Local(YoutubeBot):
         self.ActionChains(self.driver).click(self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]')).perform()
     
     def run(self):
-        from server import Server
         import time
-
-        port = find_free_port()
-        server = Server(self.VIDS, port, settings["local"]["num_vid_insts"])
-        server.start()
         
         self.create_driver()
 
-        self.driver.get(f"http://localhost:{port}/")
+        self.driver.get(f"http://localhost:{self.port}/")
 
         @wrap_filter
         def play_vids(frame):
@@ -120,14 +116,17 @@ class YoutubeViewBot_Local(YoutubeBot):
         while True:
             play_vids(self.__get_vids())
             time.sleep(settings["wait_time"])
-            self.driver.get(f"http://localhost:{port}/")
+            self.driver.get(f"http://localhost:{self.port}/")
 
 def main():
     match settings["type"]:
         case 0:
             [YoutubeViewBot_Reddit().start() for _ in range(settings["dnum"])]
         case 1:
-            [YoutubeViewBot_Local(settings["local"]["vid_ids"]).start() for _ in range(settings["dnum"])]
+            from server import Server
+            port = find_free_port()
+            Server(settings["local"]["vid_ids"],port,settings["local"]["num_vid_insts"]).start()
+            [YoutubeViewBot_Local(settings["local"]["vid_ids"], port).start() for _ in range(settings["dnum"])]
     
     import time
     while True:
