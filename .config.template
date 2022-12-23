@@ -1,0 +1,10 @@
+type = {type="int", range=[0,1]}
+dnum = {type="int"}
+wait_time = {type="int"}
+headless = {type="bool"}
+
+VD = {optional=true, type="bool", default=true}
+
+[local]
+vid_ids = {type="list"}
+num_vid_insts = {type="int"}
