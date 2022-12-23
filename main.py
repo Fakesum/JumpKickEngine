@@ -6,8 +6,6 @@ from selenium.webdriver.common.by import By
 class YoutubeBot(threading.Thread):
     import os as __os
 
-    DEBUG = True
-
     def __init__(self) -> None:
 
         self.__display = None
@@ -16,6 +14,9 @@ class YoutubeBot(threading.Thread):
         self.daemon = True
 
     def create_driver(self) -> None:
+        """
+            Create Undetected Chromedriver for any given Env
+        """
         options = uc.ChromeOptions()
 
         if settings["headless"]:
@@ -30,10 +31,19 @@ class YoutubeBot(threading.Thread):
 
         self.driver: uc.Chrome = uc.Chrome(
             options=options,
-            no_sandbox=(False if self.DEBUG else True),
-            version_main=((int(exec_cmd("google-chrome-stable --version")[0].split(" ")[-2].split(".")[0])) if self.DEBUG else None),
-            driver_executable_path=(None if self.DEBUG else "/usr/bin/chromedriver")
+            no_sandbox=(False if settings["debug"] else True),
+            version_main=((int(exec_cmd("google-chrome-stable --version")[0].split(" ")[-2].split(".")[0])) if settings["debug"] else None),
+            driver_executable_path=(None if settings["debug"] else "/usr/bin/chromedriver")
         )
+
+    def __default_content(self):
+        self.driver.switch_to.default_content()
+
+    @wrap_poll(None, poll=1, expected_outcome=None, on_failer=__default_content)
+    def play_vids(self, vid_sel: str)->None:
+        self.driver.switch_to.frame(self.driver.find_element(vid_sel))
+        self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
+        self.driver.switch_to.default_content()
 
 class YoutubeViewBot_Reddit(YoutubeBot):
     def __init__(self) -> None:
@@ -44,27 +54,14 @@ class YoutubeViewBot_Reddit(YoutubeBot):
     def __get_vids(self):
         return self.driver.find_elements(By.CSS_SELECTOR, "iframe.media-element")
     
-    def __default_content(self):
-        self.driver.switch_to.default_content()
-    
-    @wrap_poll(None, expected_outcome=None, on_failer=__default_content)
-    def __switch_video_frame(self, frame):
-        self.driver.switch_to.frame(frame)
-        self.driver.switch_to.frame(self.driver.find_element(By.CSS_SELECTOR, "iframe"))
-    
-    @wrap_poll(None, expected_outcome=None)
-    def __press_play_vids(self):
-        self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]').click()
-
-    
     def run(self):
         self.create_driver()
 
         @wrap_filter
+        @wrap_poll(None, expected_outcome=None)
         def play_vids(frame):
-            self.__switch_video_frame(frame)
-            self.__press_play_vids()
-            self.__default_content()
+            self.driver.switch_to.frame(frame)
+            self.play_vids("iframe")
 
         for subreddit in self.valid_subreddits:
             self.driver.get(f"https://reddit.com/r/{subreddit}")
@@ -82,7 +79,6 @@ class YoutubeViewBot_Reddit(YoutubeBot):
                 play_vids(self.__get_vids())
 
 class YoutubeViewBot_Local(YoutubeBot):
-    from selenium.webdriver.common.action_chains import ActionChains
 
     def __init__(self, vids: typing.List[str], port) -> None:
         super().__init__()
@@ -93,14 +89,10 @@ class YoutubeViewBot_Local(YoutubeBot):
     def __get_vids(self):
         return self.driver.find_elements(By.CSS_SELECTOR, "iframe")
     
-    @wrap_poll(None, expected_outcome=None)
-    def __switch_to_frame(self, frame):
-        self.driver.switch_to.frame(frame)
-    
-    def __play_vid(self):
-        self.ActionChains(self.driver).click(self.driver.find_element(By.CSS_SELECTOR, '[aria-label="Play"]')).perform()
-    
     def run(self):
+        """
+            Main function of the parrelle selenium inst
+        """
         import time
         
         self.create_driver()
@@ -109,9 +101,7 @@ class YoutubeViewBot_Local(YoutubeBot):
 
         @wrap_filter
         def play_vids(frame):
-            self.__switch_to_frame(frame)
-            self.__play_vid()
-            self.driver.switch_to.default_content()
+            self.play_vids(frame)
         
         while True:
             play_vids(self.__get_vids())
@@ -119,14 +109,24 @@ class YoutubeViewBot_Local(YoutubeBot):
             self.driver.get(f"http://localhost:{self.port}/")
 
 def main():
+    """
+        Starting point of the program
+    """
+    def start_server() -> int:
+        """Start Flask Server
+
+        Returns:
+            int: port that the server is runing at
+        """
+        from server import Server
+        port = find_free_port()
+        Server(settings["local"]["vid_ids"],port,settings["local"]["num_vid_insts"]).start()
+
     match settings["type"]:
         case 0:
             [YoutubeViewBot_Reddit().start() for _ in range(settings["dnum"])]
         case 1:
-            from server import Server
-            port = find_free_port()
-            Server(settings["local"]["vid_ids"],port,settings["local"]["num_vid_insts"]).start()
-            [YoutubeViewBot_Local(settings["local"]["vid_ids"], port).start() for _ in range(settings["dnum"])]
+            [YoutubeViewBot_Local(settings["local"]["vid_ids"], start_server()).start() for _ in range(settings["dnum"])]
     
     import time
     while True:
