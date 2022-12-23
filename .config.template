@@ -8,6 +8,9 @@ headless = {optional=true, type="bool", default=false}
 
 VD = {optional=true, type="bool", default=true}
 
+[reddit]
+reps = {optional=true, type='list', default=['JumpKickEngine', 'JumpKickEngine1']}
+
 [local]
 vid_ids = {type="list"}
 num_vid_insts = {type="int"}
