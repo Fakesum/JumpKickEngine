@@ -1,7 +1,8 @@
 type = {type="int", range=[0,1]}
 dnum = {type="int"}
 wait_time = {type="int"}
-headless = {type="bool"}
+
+headless = {optional=true, type="bool", default=false}
 
 VD = {optional=true, type="bool", default=true}
 
