@@ -1,4 +1,4 @@
-[submodule "utils"]
-	path = utils
+[submodule "youtube_promoter/utils"]
+	path = youtube_promoter/utils
 	url = git@github.com:Fakesum/utils.git
 	branch = main
