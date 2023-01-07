@@ -14,3 +14,4 @@ reps = {optional=true, type='list', default=['JumpKickEngine', 'JumpKickEngine1'
 [local]
 vid_ids = {type="list"}
 num_vid_insts = {type="int"}
+tabs = {optional=false, type='int'}
