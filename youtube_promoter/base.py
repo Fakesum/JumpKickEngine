@@ -24,7 +24,7 @@ class YoutubeBot(__threading.Thread):
 
         if self.settings["headless"]:
             options.add_argument("--headless")
-        elif (self.__os.name == 'posix'):
+        elif (self.__os.name == 'posix') and self.settings["VD"]:
             from pyvirtualdisplay.display import Display
             self.__display = Display()
             self.__display.start()
@@ -41,11 +41,10 @@ class YoutubeBot(__threading.Thread):
             driver_executable_path=(None if self.settings["debug"] else "/usr/bin/chromedriver")
         )
 
-    def __default_content(self):
-        self.driver.switch_to.default_content()
-
-    @poll_decorator(None, poll=1, expected_outcome=None, on_failer=__default_content)
+    @poll_decorator(None, return_val="validation", validation="expected_outcome",expected_outcome=None)
     def play_vids(self, vid_sel: str)->None:
-        self.driver.switch_to.frame(self.driver.find_element(vid_sel))
-        self.driver.find_element(self.By.CSS_SELECTOR, '[aria-label="Play"]').click()
-        self.driver.switch_to.default_content()
+        try:
+            self.driver.switch_to.frame(vid_sel)
+            self.driver.find_element(self.By.CSS_SELECTOR, '[aria-label="Play"]').click()
+        finally:
+            self.driver.switch_to.default_content()

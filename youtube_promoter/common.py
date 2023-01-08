@@ -19,3 +19,4 @@ def start_server() -> int:
     from .server import Server
     port = find_free_port()
     Server(settings["local"]["vid_ids"],port,settings["local"]["num_vid_insts"]).start()
+    return port
