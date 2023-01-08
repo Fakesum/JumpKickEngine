@@ -31,9 +31,9 @@ class YoutubeViewBot(YoutubeBot):
             play_videos(__get_vids())
             self.driver.switch_to.new_window()
         
-        import time
+        import time, random
         while True:
-            time.sleep(self.settings["wait_time"])
+            time.sleep(self.settings["wait_time"] + random.uniform(5, 10))
             for i in range(self.settings["tabs"]):
                 self.driver.switch_to.window(self.driver.window_handles[i])
                 self.driver.get(f"http://localhost:{self.port}/")
