@@ -7,8 +7,9 @@ def wrap_filter(f):
     def wrapper(args, common=[]):
         for arg in args:
             yield f(arg, *common)
-    return (lambda: list(wrapper()))
-
+    def _wrapper(args, common=[]):
+        return list(wrapper(args, common))
+    return _wrapper
 def start_server() -> int:
     """Start Flask Server
 
