@@ -4,7 +4,7 @@ class YoutubeViewBot(YoutubeBot):
     import typing
 
     from .common import (
-        wrap_poll,
+        poll_decorator,
         settings,
         wrap_filter
     )
@@ -18,13 +18,9 @@ class YoutubeViewBot(YoutubeBot):
         """
             Main function of the parrelle selenium inst
         """
-        import time
-        
         self.create_driver()
 
-        self.driver.get(f"http://localhost:{self.port}/")
-
-        @self.wrap_poll(None, validity_determiner=(lambda a: (a.__len__() == self.settings["local"]["num_vid_insts"])))
+        @self.poll_decorator(None, validity_determiner=(lambda a: (a.__len__() == self.settings["local"]["num_vid_insts"])))
         def __get_vids(self):
             return self.driver.find_elements(self.By.CSS_SELECTOR, "iframe")
         
@@ -32,7 +28,15 @@ class YoutubeViewBot(YoutubeBot):
         def play_vids(frame):
             self.play_vids(frame)
         
-        while True:
-            play_vids(__get_vids())
-            time.sleep(self.settings["wait_time"])
+        for _ in range(self.settings["tabs"]):
             self.driver.get(f"http://localhost:{self.port}/")
+            play_vids(__get_vids())
+            self.driver.switch_to.new_window()
+        
+        import time
+        while True:
+            time.sleep(self.settings["wait_time"])
+            for i in range(self.settings["tabs"]):
+                self.driver.switch_to.window(self.driver.window_handles[i])
+                self.driver.get(f"http://localhost:{self.port}/")
+                play_vids(__get_vids())
