@@ -32,6 +32,13 @@ class YoutubeBot(__threading.Thread):
         options.add_argument("--mute-audio")
         options.add_argument("--disable-dev-shm-usage")
 
+        if self.settings["use_proxies"]:
+            from ballyregan import ProxyFetcher #TODO: Submodule
+            fetcher = ProxyFetcher()
+            proxy = fetcher.get_one()
+
+            options.add_argument(f"--proxy-server={proxy.protocol.lower()}://{proxy.ip.lower()}:{proxy.port}")
+
         from .utils import exec_cmd
 
         self.driver: self.uc.Chrome = self.uc.Chrome(
