@@ -8,6 +8,8 @@ headless = {optional=true, type="bool", default=false}
 
 VD = {optional=true, type="bool", default=true}
 
+use_proxies = {optional=false, type='bool'}
+
 [reddit]
 reps = {optional=true, type='list', default=['JumpKickEngine', 'JumpKickEngine1']}
 
