@@ -32,12 +32,21 @@ class YoutubeBot(__threading.Thread):
         options.add_argument("--mute-audio")
         options.add_argument("--disable-dev-shm-usage")
 
-        if self.settings["use_proxies"]:
-            from ballyregan import ProxyFetcher #TODO: Submodule
-            fetcher = ProxyFetcher()
-            proxy = fetcher.get_one()
+        if self.settings["proxy"]["use_proxies"]:
+            if self.settings["proxy"]["proxies"] == []:
+                import asyncio
+                
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
 
-            options.add_argument(f"--proxy-server={proxy.protocol.lower()}://{proxy.ip.lower()}:{proxy.port}")
+                from ballyregan import ProxyFetcher
+                fetcher = ProxyFetcher()
+                proxy = fetcher.get_one()[0]
+
+                options.add_argument(f"--proxy-server={proxy.protocol.lower()}://{proxy.ip.lower()}:{proxy.port}")
+            else:
+                import random
+                options.add_argument(f"""--proxy-server={random.choice(self.settings["given_proxies"])}""")
 
         from .utils import exec_cmd
 

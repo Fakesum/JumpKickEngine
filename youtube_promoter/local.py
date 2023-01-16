@@ -1,11 +1,9 @@
 from .base import YoutubeBot
 
 class YoutubeViewBot(YoutubeBot):
-    import typing
 
-    def __init__(self, vids: typing.List[str], port) -> None:
+    def __init__(self, port) -> None:
         super().__init__()
-        self.VIDS = vids
         self.port = port
     
     def run(self):

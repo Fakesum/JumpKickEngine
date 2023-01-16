@@ -8,12 +8,17 @@ headless = {optional=true, type="bool", default=false}
 
 VD = {optional=true, type="bool", default=true}
 
+[proxy]
 use_proxies = {optional=false, type='bool'}
+proxies = {optional=true, type='list', default=[]}
 
 [reddit]
 reps = {optional=true, type='list', default=['JumpKickEngine', 'JumpKickEngine1']}
 
 [local]
-vid_ids = {type="list"}
+locator = {type='str', choice=["vid_ids", "channel_id"]}
+vid_ids = {optional=true, type="list"}
+channel_id = {optional=true, type='str'}
+
 num_vid_insts = {type="int"}
 tabs = {optional=false, type='int'}

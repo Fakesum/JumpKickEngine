@@ -2,3 +2,5 @@ undetected_chromedriver
 toml
 flask
 pyvirtualdisplay
+scrapetube
+git+https://github.com/Fakesum/ballyregan.git

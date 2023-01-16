@@ -10,7 +10,7 @@ def wrap_filter(f):
     def _wrapper(args, common=[]):
         return list(wrapper(args, common))
     return _wrapper
-def start_server() -> int:
+def start_server(vids) -> int:
     """Start Flask Server
 
     Returns:
@@ -18,5 +18,5 @@ def start_server() -> int:
     """
     from .server import Server
     port = find_free_port()
-    Server(settings["local"]["vid_ids"],port,settings["local"]["num_vid_insts"]).start()
+    Server(vids,port,settings["local"]["num_vid_insts"]).start()
     return port
